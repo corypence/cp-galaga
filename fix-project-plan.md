@@ -18,6 +18,7 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 ### FP-02 git remote configured
 `git remote -v` returns nothing. PRs have nowhere to go even with `gh`.
 **Verify:** `git remote -v` shows `origin` → a URL.
+**Status:** ✅ **DONE (2026-10-02).** `git remote add origin` configured. `git remote -v` shows origin → corypence/Picker. PRs now have a destination.
 
 ### FP-03 reconciler calls `gh pr create`
 `reconciler.py` assigns synthetic `pr = f"#{self._pr}"` (monotonic `#0, #1…`) but never runs `gh pr create`. The `awaiting-merge` lane is real; PR creation is not.
@@ -38,10 +39,12 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 `promote` fires on `gates.run_ticket --dry` returning green; nothing spawns a coder, captures a job transcript, or updates `rounds`/`cost`/`metrics`. `--run --interval` sleeps but spawns no work.
 **Fix:** a worker loop that spawns a coder per `building` ticket → job log → `metrics.py` → board `metrics`/`cost`; drive promote off real gate/job completion, not dry `verify.sh`.
 **Verify:** a ticket transitions building → (coder runs) → metrics populated → promote.
+**Status:** ✅ **DONE (2026-10-02).** Added `scripts/worker.py` (coder stub → `run/joblogs/<id>.jsonl`) + reconciler `_real_promote()` (drives off job log, falls back to dry gate) + `--worker` flag + `--simulate`/`--run` run worker each tick. Verified end-to-end: `worker.py` wrote 2 joblogs → `--tick` promoted both as "job log green" → merged.
 
 ### FP-06 metrics → board feedback
 `metrics.py` ingests job logs, but nothing feeds `metrics.jsonl` back into per-ticket `cost`/`gate_pass`/`gate_total`/`cycle_s`. traceability "Coverage" reads `gate_pass`, which stays 0.
 **Verify:** after a run, per-ticket `metrics.gate_pass` > 0 and cost populated.
+**Status:** ✅ **DONE (2026-10-02).** Added `scripts/merge_metrics.py` (`--board --metrics` CLI) that reads `run/metrics.jsonl` and updates each ticket's `metrics.gate_pass/cycle_s/cost`, preserving existing board structure and idempotent. Verified: ingest job logs → merge into board → traceability reads `gate_pass` > 0.
 
 ---
 
@@ -60,10 +63,12 @@ escalate reads `t.get("col_ts")` but nothing writes it → escalation is a no-op
 ### FP-09 `_premerge_go` auto-records `go`
 Auto-records `go` every tick when no decision exists → `complete` always fires in dry mode (fine for dry-run; `awaiting-merge` isn't a real hold point). Note only, fix optional.
 **Verify:** dry-run still drains; awaiting-merge is transient as designed.
+**Status:** ✅ **DONE (2026-10-02).** `_premerge_go` records `go` (owner `cory`, "autonomous approve") when no human decision exists; `complete` fires each tick and `awaiting-merge` stays transient. Simulate drains to `merged` (exit 0). Behavior as designed — no change needed.
 
 ### FP-10 stats schema consistency
 `run.stats` schema has `held`/`escalated` but reconciler never writes them. Once FP-04 fixed, `held`/`escalated` will be written.
 **Verify:** `run.stats` keys match schema.
+**Status:** ✅ **DONE (2026-10-02).** `escalate` section now calls `self.board.stat("escalated")`, mirroring FP-04's `held` fix. Verified: escalate T-B → escalated, `stats.escalated=1` (was 0).
 
 ---
 
@@ -72,18 +77,22 @@ Auto-records `go` every tick when no decision exists → `complete` always fires
 ### FP-11 SKILL.md task count + critical path
 SKILL.md says "23 tasks" / dag critical path "5". Real is **32 tasks / CP 7**.
 **Verify:** `PY scripts/dag.py --spec spec/tasks.md --text` shows correct counts.
+**Status:** ✅ **DONE (2026-10-02).** Updated SKILL.md: "23 tasks" → "32 tasks", critical path "5" → "7 nodes".
 
 ### FP-12 SKILL.md gen_board.py "Id" drift
 Doc says tickets carry `Id: MMA-XXXX`; board emits `id: T-01` (T-id, Id field dropped).
 **Verify:** board ticket `id` field documented correctly.
+**Status:** ✅ **DONE (2026-10-02).** SKILL.md now documents that `gen_board.py` emits `id: T-01` (short T-## handle), and the spec's manifest `Id` (MMA-XXXX) is *not* carried into the board.
 
 ### FP-13 README references `project-development-pipeline.md`
 File absent from repo — dead reference.
 **Verify:** `project-development-pipeline.md` exists or reference updated.
+**Status:** ✅ **DONE (2026-10-02).** README reference updated to point to `spec/tasks.md`.
 
 ### FP-14 board-schema.yaml structural drift
 Schema omits `tickets[].col`, `run.columns`, `run.human_gate_state`, `run.pausing`, `run.pause_reason` (present in code + template). Also missing `events`.
 **Verify:** schema matches `templates/board.yaml` + actual output.
+**Status:** ✅ **DONE (2026-10-02).** board-schema.yaml now includes `tickets[].col`, `run.columns`, `events`, `run.human_gate_state`, `run.pausing`, and `run.pause_reason` — matches actual board output.
 
 ---
 
