@@ -107,7 +107,9 @@ def incidents(seed: bool = False) -> dict:
             if not line:
                 continue
             inc = json.loads(line)
-            counts[inc["kind"]] = counts.get(inc["kind"], 0) + 1
+            kind = inc.get("kind")
+            if kind:
+                counts[kind] = counts.get(kind, 0) + 1
             total += 1
     return {"total": total, "by_kind": counts}
 
@@ -135,7 +137,7 @@ def main() -> int:
         return 0
     if args.promote:
         print(json.dumps(promote(args.board, args.canary, args.health, args.dry), indent=2))
-        return 1 if args.canary and not args.dry else 0
+        return 0 if args.dry else 1
     if args.incidents:
         print(json.dumps(incidents(args.seed), indent=2))
         return 0

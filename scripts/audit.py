@@ -106,9 +106,27 @@ def audit_deps(root: Path):
                 if m:
                     pins.append({"engine": "npm", "package": m.group(1), "version": m.group(2)})
             elif engine == "go":
-                m = re.search(r"\S+\s+v[0-9].*", ln)
-                if m:
-                    pins.append({"engine": "go", "package": ln.split()[0], "version": ln.split()[1]})
+                # Strip an optional "require" keyword, then split module / version off the
+                # end, drop an "// indirect" comment, and strip the leading "v" (and
+                # "+incompatible" build tag) from the version.
+                tokens = ln.split()
+                if tokens and tokens[0] == "require":
+                    tokens = tokens[1:]
+                if not tokens:
+                    continue
+                pkg, version = tokens[0], None
+                if len(tokens) >= 2 and tokens[1].startswith("v"):
+                    version = tokens[1]
+                elif len(tokens) >= 3 and tokens[2].startswith("v"):
+                    # module had a "// indirect" comment in the tokens[1] slot
+                    version = tokens[2]
+                if version:
+                    version = version.replace("//", "").strip().lstrip(" ")
+                    if version.startswith("v"):
+                        version = version[1:]
+                    version = version.rstrip("+incompatible")
+                if pkg and version:
+                    pins.append({"engine": "go", "package": pkg, "version": version})
     return pins
 
 

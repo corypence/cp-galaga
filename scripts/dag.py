@@ -86,10 +86,14 @@ def validate_topo(edges: dict[str, list[str]], ordered: list[str]) -> list[str]:
     return violations
 
 
-def critical_path(edges: dict[str, list[str]]) -> tuple[list[str], int]:
-    """Longest path through the DAG by node count (depth = max deps chain)."""
+def ticket_depths(edges: dict[str, list[str]]) -> dict[str, int]:
+    """Depth per ticket: longest deps chain to a leaf (node count), with a cycle guard.
+
+    Shared by ``critical_path`` (which reports only the scalar longest path) and the
+    reconciler (which needs a depth per ticket to order dispatch / resolve collisions), so
+    neither has to re-implement the recursion.
+    """
     memo: dict[str, int] = {}
-    parent: dict[str, str] = {}
 
     def depth(t: str, stack: set[str]) -> int:
         if t in memo:
@@ -97,21 +101,28 @@ def critical_path(edges: dict[str, list[str]]) -> tuple[list[str], int]:
         if t in stack:  # cycle guard
             return 0
         stack = stack | {t}
-        best, bp = 0, ""
+        best = 0
         for d in edges.get(t, []):
-            if d in edges or d in {k for k in []}:
-                dd = depth(d, stack)
-                if dd > best:
-                    best, bp = dd, d
+            best = max(best, depth(d, stack))
         memo[t] = best + 1
-        parent[t] = bp
         return memo[t]
 
-    longest, root = 0, ""
-    for t in edges:
-        d = depth(t, set())
+    return {t: depth(t, set()) for t in edges}
+
+
+def critical_path(edges: dict[str, list[str]]) -> tuple[list[str], int]:
+    """Longest path through the DAG by node count (depth = max deps chain)."""
+    depths = ticket_depths(edges)
+    parent: dict[str, str] = {}
+    root, longest = "", 0
+    for t, d in depths.items():
         if d > longest:
             longest, root = d, t
+        best = 0
+        for dep in edges.get(t, []):
+            if depths.get(dep, 0) > best:
+                best = depths.get(dep, 0)
+                parent[t] = dep
     # Walk parents back from root to rebuild the path.
     path = []
     node = root

@@ -27,7 +27,8 @@ from pathlib import Path
 
 def backoff_delay(attempt: int, base: float, cap: float) -> float:
     exp = min(cap, base * (2 ** attempt))
-    return random.uniform(exp * 0.5, exp)
+    # Full jitter: delay = exp * random(0.5, 1.5), matching the module docstring.
+    return exp * random.uniform(0.5, 1.5)
 
 
 def run_once(cmd: str) -> tuple[int, str]:

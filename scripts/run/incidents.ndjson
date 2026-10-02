@@ -1,0 +1,4 @@
+{"id": "INC-1", "kind": "collision", "severity": "warn", "detail": "two tickets touched the same file; reconciler held one"}
+{"id": "INC-2", "kind": "flaky_gate", "severity": "warn", "detail": "alpha-suite unit test flaked; retried with backoff"}
+{"id": "INC-3", "kind": "manual_rebase", "severity": "info", "detail": "~10 hand-resolved bases; auto-rebase planned"}
+{"id": "INC-4", "kind": "human_stall", "severity": "page", "detail": "run stalled awaiting-approval; human gate needed"}

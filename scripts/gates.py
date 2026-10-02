@@ -98,8 +98,12 @@ def run_ticket(ticket: str, ladder: dict[str, str], module: str, dry: bool = Fal
     """Run every tier in the ladder for a ticket. Stops at first red tier (fail fast)."""
     out = {"ticket": ticket, "module": module, "tiers": {}, "green": True, "cost": 0.0}
     start = time.time()
-    for tier, cmd in ladder.items():
-        res = run_tier(cmd, module, dry=dry, quarantine=quarantine)
+    for tier, cfg in ladder.items():
+        cmd = cfg["cmd"] if isinstance(cfg, dict) else cfg
+        max_retries = cfg["budget"] if isinstance(cfg, dict) else 2
+        flaky = cfg.get("flaky", False) if isinstance(cfg, dict) else False
+        res = run_tier(cmd, module, max_retries=max_retries, flaky=flaky,
+                       dry=dry, quarantine=quarantine)
         res["tier"] = tier
         out["tiers"][tier] = res
         if not res["pass"]:
@@ -144,9 +148,9 @@ def main() -> int:
     ladder = dict(DEFAULT_LADDER)
     if args.ladder:
         keep = {t: DEFAULT_LADDER[t] for t in args.ladder.split(":") if t in DEFAULT_LADDER}
-        ladder = {t: cfg["cmd"] for t, cfg in keep.items()}
+        ladder = {t: cfg for t, cfg in keep.items()}
     else:
-        ladder = {t: cfg["cmd"] for t, cfg in DEFAULT_LADDER.items()}
+        ladder = dict(DEFAULT_LADDER)
 
     if not args.run:
         ap.print_help()

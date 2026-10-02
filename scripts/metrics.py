@@ -70,6 +70,8 @@ def analyze(path: Path) -> dict:
         m = re.search(pat, text)
         if m:
             rounds[kind] = {"done": int(m.group(1)), "budget": int(m.group(2))}
+    # A gate that passed but needed a retry is flaky. Retry evidence is a retry/token mention.
+    flaky = verdict == "pass" and bool(re.search(r"retr(?:y|ied)", text, re.IGNORECASE))
     return {
         "ticket_id": parse_ticket_id(path),
         "verdict": verdict,
@@ -77,6 +79,7 @@ def analyze(path: Path) -> dict:
         "start_ts": start.isoformat() if start else None,
         "end_ts": end.isoformat() if end else None,
         "rounds": rounds,
+        "flaky": flaky,
     }
 
 
@@ -100,13 +103,14 @@ def main() -> int:
             "rounds": {"code": {"done": 0, "budget": 3},
                        "test": {"done": 0, "budget": 3},
                        "response": {"done": 0, "budget": 5}},
+            "flaky": False,
         }
         mode = "w"
         records = [sample]
     else:
         logdir = Path(args.logs)
         records = [analyze(p) for p in sorted(logdir.glob("job-*.log"))]
-        mode = "w" if args.pretty else "w"
+        mode = "w"
 
     with open(out, mode) as f:
         if args.pretty:

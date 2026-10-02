@@ -209,8 +209,7 @@ class Reconciler:
 
     def tick(self) -> list[str]:
         actions = []
-        cols = self.board.cols()
-        slots = self.board.data["run"]["slots"]
+        slots = self.board.data.get("run", {}).get("slots") or 0
 
         # 1) Fold: blocked -> ready when deps merge.
         for t in self.board.data["tickets"]:
@@ -337,24 +336,10 @@ def main() -> int:
 
     board = Board(Path(args.board))
     deps = parse_deps(Path(args.tasks))
-    # Critical-path depth per ticket (longest chain to merge).
-    from dag import critical_path  # noqa: F401 (import kept for compat; depth computed below)
-    depth: dict[str, int] = {}
-    for t in board.data["tickets"]:
-        memo = {}
-
-        def d(tid, stack):
-            if tid in memo:
-                return memo[tid]
-            if tid in stack:
-                return 0
-            stack = stack | {tid}
-            best = 0
-            for x in deps.get(tid, []):
-                best = max(best, d(x, stack))
-            memo[tid] = best + 1
-            return memo[tid]
-        depth[t["id"]] = d(t["id"], set())
+    # Critical-path depth per ticket (longest chain to merge). Shared with dag.critical_path
+    # via dag.ticket_depths, so reconciler and dag.py don't each re-implement the recursion.
+    from dag import ticket_depths  # noqa: F401
+    depth: dict[str, int] = ticket_depths(deps)
 
     ctx = {"escalate_after": args.escalate_after, "worker": args.worker}
     recon = Reconciler(board, deps, depth, ctx)

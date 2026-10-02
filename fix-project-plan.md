@@ -114,34 +114,42 @@ Schema omits `tickets[].col`, `run.columns`, `run.human_gate_state`, `run.pausin
 ### FP-17 reconciler.py dead vars
 `cols = self.board.cols()` is computed but never used (dead var). `critical_path_len` depth is recomputed via local `d()` in main() duplicating dag.critical_path. Minor — no functional bug.
 **Verify:** remove unused `cols` var; confirm `--simulate` still drains.
+**Status:** ✅ **DONE (2026-10-02).** Removed the dead `cols` var; made `slots` read defensive (`.get("run", {}).get("slots") or 0`). Refactored critical-path depth into a shared module-level `dag.ticket_depths()` used by both `critical_path` and `main()` (no depth recursion duplicated). dag.py CLI output byte-identical before/after; `--simulate`/`--tick` still drain (exit 0).
 
 ### FP-18 gates.py budget/flaky unused
 `run_tier` called from `run_ticket` always passes `max_retries=2, flaky=False`, so `DEFAULT_LADDER`'s `budget`/`flaky` fields (e.g. `perf` flaky=True) are never applied. `--ladder` also strips ladder to `cmd` only. Minor.
 **Verify:** confirm DEFAULT_LADDER budget/flaky fields are read somewhere (or note they're unused).
+**Status:** ✅ **DONE (2026-10-02).** `run_ticket` now reads `budget`/`flaky` from each tier config and passes them to `run_tier`. `--ladder` now keeps full tier dicts (not `cmd`-only). Verified `--list-ladder` shows budget/flaky per tier.
 
 ### FP-19 dag.py dead condition
 `critical_path` has dead `if d in edges or d in {k for k in []}:` — `{k for k in []}` is always-empty set. Effectively just `d in edges`. Minor.
 **Verify:** simplify condition; confirm critical path still 7.
+**Status:** ✅ **DONE (2026-10-02).** Simplified to just `best = max(best, depth(d, stack))` in the shared `ticket_depths` recursion. Critical path verified correct on a synthetic 7-deep chain (=7); real single-task spec = 1 node. dag.py CLI output byte-identical before/after.
 
 ### FP-20 metrics.py dead branch + wall_s always 0
 `mode = "w" if args.pretty else "w"` dead branch. Docstring claims logs have timestamps but real ones don't, so wall_s is always 0. Minor.
 **Verify:** confirm dry run works; note wall_s is 0 with real data.
+**Status:** ✅ **DONE (2026-10-02).** Collapsed the dead `if args.pretty else "w"` branch to a single `mode = "w"`. Confirmed `flaky` field now emitted per record (pass + retry mention → flaky), closing the gap with dashboard.flake_rate. Dry run works with and without `--logs`; wall_s is 0 in sample data (single timestamp per line), as expected.
 
 ### FP-21 audit.py go.mod parse wrong fields
 `audit_deps` go.mod parse extracts wrong fields: `package = ln.split()[0]` (`require`) and `version = ln.split()[1]` (`example.com/bar`) instead of module/version. Piped versions carry operator (`requests==2.31.0` → `=2.31.0`). Minor.
 **Verify:** run audit, confirm parse quirk.
+**Status:** ✅ **DONE (2026-10-02).** Rewrote the go.mod parser: strips an optional `require` keyword, splits module/version off the end, handles `// indirect` comments, strips leading `v` and `+incompatible` build tag, and handles piped versions. Verified `audit_deps` extracts correct module + version.
 
 ### FP-22 traceability.py / dashboard.py flake_rate gap
-`dashboard.flake_rate` counts `m.get("flaky")` but `metrics.py` never emits a `flaky` field — flake rate always 0. Schema gap between the two. Minor.
+`dashboard.flake_rate` counts `m.get("flaky")` but `metrics.py` never emitted a `flaky` field — flake rate always 0. Schema gap between the two. Minor.
 **Verify:** confirm dashboard.flake_rate is always 0.
+**Status:** ✅ **DONE (2026-10-02).** Added a `flaky` field to metrics.py per-record output (pass + retry/retried mention → flaky=True) and made dashboard.flake_rate read it. Schema gap closed; dashboard now reports a real flake rate.
 
 ### FP-23 phase3.py --dry canary exit 1 + incidents KeyError
 `--promote --canary N --dry` returns exit 1 (`return 1 if args.canary and not args.dry else 0`), so a successful dry promotion reports non-zero. Also `incidents()` assumes every line has a `kind` key (KeyError). Minor.
 **Verify:** run phase3 --promote --canary 2 --dry, confirm exit 1 bug.
+**Status:** ✅ **DONE (2026-10-02).** Fixed exit-code logic: a successful `--promote --canary N` now returns 0 when `--dry` and 1 when `--dry` is omitted (correct semantics). `incidents()` now uses `line.get("kind")` and skips lines without a `kind` (no KeyError). Verified dry canary exits 0.
 
 ### FP-24 retry.py backoff not full jitter
 Docstring says "full jitter" (`random(0.5,1.5)`) but code does `uniform(exp*0.5, exp)` (0.5–1.0 scale). Backoff at attempt 0 non-zero. Minor.
 **Verify:** run retry --demo, confirm backoff behavior.
+**Status:** ✅ **DONE (2026-10-02).** Fixed `backoff_delay` to use true full jitter: `exp * random.uniform(0.5, 1.5)`, matching the module docstring. Verified `retry --demo` produces jittered backoff.
 
 ---
 

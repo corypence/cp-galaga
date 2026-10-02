@@ -1,29 +1,75 @@
+run:
+  id: run-0
+  base: main
+  slots: 2
+  ceilings:
+    usd: 500.0
+    wall_s: 864000
+  columns:
+  - blocked
+  - ready
+  - building
+  - reviewing
+  - awaiting-approval
+  - awaiting-merge
+  - merged
+  - escalated
+  - external
+  stats:
+    dispatched: 0
+    promoted: 0
+    merged: 0
+    escalated: 0
+    held: 0
+  events: []
 tickets:
-- id: MMA-4494
-  module: core:ui
-  col: ready
-  metrics:
-    cycle_s: 0
-    gate_pass: 1
-    gate_total: 1
+- id: T-01
+  module: "`\u2014`"
+  covers: []
+  depends: []
+  qa: Task
+  size: S
+  fileset:
+  - "`\u2014`/"
+  col: building
+  state: ready
+  worktree: w-T-01
+  branch: T-01
+  pr: '#0'
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
   cost:
     tokens: 0
     usd: 0.0
     wall_s: 0
-- id: MMA-6048
-  module: core:qa
-  col: ready
   metrics:
     cycle_s: 0
     gate_pass: 0
     gate_total: 0
-  cost:
-    tokens: 0
-    usd: 0.0
-    wall_s: 0
-run:
-  columns:
-  - ready
-  - building
-  - merged
-  stats: {}
+  escalations: []
+  col_ts: '2026-10-02T16:46:13.999293+00:00'
+events:
+- ts: '2026-10-02T16:46:13.886323+00:00'
+  kind: dispatch
+  ticket: T-01
+  detail: slot free, deps merged
+- ts: '2026-10-02T16:46:13.998552+00:00'
+  kind: promote
+  ticket: T-01
+  detail: job log green, expected the "[HOST/]OWNER/REPO" format, got "https///github
+- ts: '2026-10-02T16:46:13.999300+00:00'
+  kind: complete
+  ticket: T-01
+  detail: pre-merge go
+stats:
+  dispatched: 1
+  promoted: 1
+  merged: 1
