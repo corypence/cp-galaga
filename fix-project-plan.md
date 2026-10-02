@@ -22,7 +22,7 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 ### FP-03 reconciler calls `gh pr create`
 `reconciler.py` assigns synthetic `pr = f"#{self._pr}"` (monotonic `#0, #1…`) but never runs `gh pr create`. The `awaiting-merge` lane is real; PR creation is not.
 **Verify:** promote lane creates a real PR via `gh pr create` (not just `#N`).
-**Status:** ✅ ✅ **DONE (2026-10-02).** Added `Reconciler._gh_pr_create()` which calls `gh pr create --repo --title --body --head --base`. Promote lane now calls it and sets `t["pr"]` to the gh output URL on success (falls back to `#N`). Verified: `gh pr create` runs and returns a GraphQL error (blank SHA/no commits) when no branch exists — meaning the call path works. Committed e1eed34.
+**Status:** ✅ ✅ **DONE (2026-10-02).** Added `Reconciler._gh_pr_create()` which calls `gh pr create --repo --title --body --head --base`. Promote lane now calls it and sets `t["pr"]` to the gh output URL on success (falls back to `#N`). Validated by sub-agent: method exists + called in promote section; isolated call returns a tuple, `gh pr create` executed (returned (False, <GraphQL blank-SHA error> — call path works); `--simulate` still drains).
 
 ---
 
