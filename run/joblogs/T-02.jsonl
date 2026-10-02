@@ -1,0 +1,1 @@
+{"ticket_id": "T-02", "module": "core:qa", "start_ts": "2026-10-02T16:16:43.874041Z", "end_ts": "2026-10-02T16:33:13.874041Z", "verdict": "green", "gate_pass": true, "cost_usd": 1.0, "cycle_s": 990, "rounds": {"code": {"done": 3, "budget": 3}, "test": {"done": 3, "budget": 3}, "response": {"done": 5, "budget": 5}}}

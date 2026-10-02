@@ -5,7 +5,7 @@ A reusable multi-agent development pipeline, adapted from a stake-map orchestrat
 unobservable run into a machine-readable, cost/latency-observable, auditable pipeline.
 
 Full design (review → best aspects → gaps → design → roadmap) lives in
-`spec/tasks.md` (the R0 task breakdown that feeds the pipeline).
+`project-development-pipeline.md` (the source document).
 
 ## What it does
 

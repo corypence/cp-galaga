@@ -31,11 +31,11 @@ tickets:
   size: S
   fileset:
   - "`\u2014`/"
-  col: merged
+  col: building
   state: ready
-  worktree: w-T-01
-  branch: T-01
-  pr: '#0'
+  worktree: ''
+  branch: ''
+  pr: null
   rounds:
     code:
       done: 0
@@ -55,20 +55,3 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-events:
-- ts: '2026-10-02T05:23:15.539705+00:00'
-  kind: dispatch
-  ticket: T-01
-  detail: slot free, deps merged
-- ts: '2026-10-02T05:23:15.543713+00:00'
-  kind: promote
-  ticket: T-01
-  detail: gates green
-- ts: '2026-10-02T05:23:15.544715+00:00'
-  kind: complete
-  ticket: T-01
-  detail: pre-merge go
-stats:
-  dispatched: 1
-  promoted: 1
-  merged: 1

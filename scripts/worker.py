@@ -109,6 +109,29 @@ def write_joblog(job: dict, logdir: Path) -> Path:
     return out
 
 
+def _joblog_path(tid: str, logdir: Path) -> Path:
+    return logdir / f"{tid}.jsonl"
+
+
+def joblog_exists(tid: str, logdir: Path | None = None) -> bool:
+    return _joblog_path(tid, logdir or Path("run/joblogs")).exists()
+
+
+def read_joblog(tid: str, logdir: Path | None = None) -> dict | None:
+    """Return the job-log dict for a ticket (last line), or None if absent."""
+    p = _joblog_path(tid, logdir or Path("run/joblogs"))
+    if not p.exists():
+        return None
+    lines = [ln for ln in p.read_text().splitlines() if ln.strip()]
+    if not lines:
+        return None
+    import json
+    try:
+        return json.loads(lines[-1])
+    except json.JSONDecodeError:
+        return None
+
+
 def run(board: dict, max_build: int = 0, dry: bool = False,
         logdir: Path | None = None) -> list[dict]:
     """Run the coder for building tickets (up to max_build). Return the job logs written."""

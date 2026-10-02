@@ -24,7 +24,7 @@ Phase 3 (polish + determinism).
 python scripts/dag.py --tasks spec/tasks.md --mermaid graph/dag.mmd --text graph/dag.txt
 ```
 Parses task headers (`### T-01`) + inline `Depends` fields → dependency graph + critical path
-(Mermaid + text). Expect 32 tasks, critical path of 7 nodes.
+(Mermaid + text). Expect 23 tasks, critical path of 5 nodes.
 
 ### 0.2 Cost + latency metrics
 ```bash
@@ -55,10 +55,6 @@ python scripts/gen_board.py --spec spec/tasks.md --out run/board.yaml
 ```
 Parses `spec/tasks.md` → `run/board.yaml` with the extended schema (§5.3 of the design doc).
 Handles backtick-delimited `Covers` lists (`#22`, `N1`, `N2`) and inline `Depends` fields.
-
-Each emitted board ticket carries an `id` field set to the task handle from the spec header
-(`id: T-01`); the spec's `**Id**` field (the manifest id, e.g. `MMA-6048`) is **not** carried over
-into the board — the board uses the short `T-##` handle as `id`, never `Id: MMA-XXXX`.
 
 ### 1.2 The reconciler (dispatch engine)
 ```bash

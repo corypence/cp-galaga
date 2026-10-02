@@ -141,6 +141,27 @@ class Reconciler:
         res = gates.run_ticket(tid, ladder, module or "core:ui", dry=dry)
         return bool(res.get("green"))
 
+    def _joblog_path(self, tid: str) -> Path:
+        """Path to the ticket's job log under run/joblogs."""
+        return Path("run/joblogs") / f"{tid}.jsonl"
+
+    def _real_promote(self, tid: str, module: str, logdir: str = "run/joblogs") -> bool:
+        """Real promote gate: true when the ticket has a job log with a green verdict.
+
+        Falls back to the dry gate ladder when no job log exists yet (so promote still works
+        without a worker having run). Kept optional; the default dry path is unchanged.
+        """
+        import worker
+        p = Path(logdir) / f"{tid}.jsonl"
+        if not p.exists():
+            return self._gate_passed(tid, module)
+        try:
+            lines = [ln for ln in p.read_text().splitlines() if ln.strip()]
+            job = __import__("json").loads(lines[-1])
+        except (ValueError, OSError):
+            return self._gate_passed(tid, module)
+        return bool(job.get("gate_pass") and job.get("verdict") == "green")
+
     def _gh_pr_create(self, tid: str, module: str) -> tuple[bool, str]:
         """Create a PR via `gh` for a promoted ticket. Returns (ok, detail).
         Uses the repo from git remote (or --repo flag), branch = tid, base = main.
@@ -240,22 +261,28 @@ class Reconciler:
                         t.setdefault("escalations", []).append({"at": ts})
                         actions.append(f"escalate {t['id']} (stuck >{threshold}s)")
                         self.board.add_event("escalate", t["id"], "stuck")
+                        self.board.stat("escalated")
 
-        # 5) Promote: building -> awaiting-merge when the 7-tier gate ladder is green.
+        # 5) Promote: building -> awaiting-merge when the coder's job finished green (real)
+        #    or the dry gate ladder is green. A job log present -> drive off the transcript;
+        #    otherwise fall back to the dry gate.
+        logdir = self.ctx.get("logdir", "run/joblogs")
         for t in self.board.data["tickets"]:
             if t.get("col") == "building":
-                if self._gate_passed(t["id"], t.get("module", "")):
+                promote_ok = self._real_promote(t["id"], t.get("module", ""), logdir)
+                if promote_ok:
                     self._set_col(t, "awaiting-merge")
                     self.board.stat("promoted")
                     pr_ok, pr_detail = self._gh_pr_create(t["id"], t.get("module", ""))
                     t["pr"] = pr_detail if pr_ok else f"#{self._pr}"
                     self._pr += 1
                     t.setdefault("escalations", [])
+                    source = "job log green" if self._joblog_path(t["id"]).exists() else "gates green"
                     actions.append(
-                        f"promote {t['id']} -> awaiting-merge (gates green"
+                        f"promote {t['id']} -> awaiting-merge ({source}"
                         + (", pr ok" if pr_ok else ", gh pr failed)")
                         + ")")
-                    self.board.add_event("promote", t["id"], "gates green" + (", pr ok" if pr_ok else f", {pr_detail[:60]}"))
+                    self.board.add_event("promote", t["id"], source + (", pr ok" if pr_ok else f", {pr_detail[:60]}"))
 
         # 6) Complete: awaiting-merge -> merged on pre-merge Go.
         for t in self.board.data["tickets"]:
@@ -273,9 +300,19 @@ class Reconciler:
             actions.append("(nothing to do)")
         return actions
 
-    def simulate(self, ticks: int = 200) -> list[str]:
+    def _run_worker_once(self):
+        """Run the coder loop for building tickets (creates run/joblogs if missing)."""
+        import os
+        Path("run/joblogs").mkdir(parents=True, exist_ok=True)
+        import worker
+        worker.run(self.board.data, max_build=0, dry=False,
+                   logdir=Path("run/joblogs"))
+
+    def simulate(self, ticks: int = 200, run_worker: bool = True) -> list[str]:
         log = []
         for i in range(ticks):
+            if run_worker:
+                self._run_worker_once()
             a = self.tick()
             log.append(f"tick {i}: {a}")
             if all(t.get("col") in ("merged", "external", "escalated", "cancelled")
@@ -289,6 +326,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Dispatch engine for the pipeline")
     ap.add_argument("--tick", action="store_true", help="one decision pass")
     ap.add_argument("--run", action="store_true", help="keep running on interval")
+    ap.add_argument("--worker", action="store_true",
+                    help="run the coder loop for building tickets each tick (FP-05)")
     ap.add_argument("--simulate", action="store_true", help="dry-run the run")
     ap.add_argument("--interval", type=int, default=300, help="seconds between ticks")
     ap.add_argument("--board", default="run/board.yaml")
@@ -317,16 +356,18 @@ def main() -> int:
             return memo[tid]
         depth[t["id"]] = d(t["id"], set())
 
-    ctx = {"escalate_after": args.escalate_after}
+    ctx = {"escalate_after": args.escalate_after, "worker": args.worker}
     recon = Reconciler(board, deps, depth, ctx)
 
     if args.simulate:
-        for line in recon.simulate():
+        for line in recon.simulate(run_worker=args.worker):
             print(line)
         return 0
 
     if args.run:
         while True:
+            if args.worker:
+                recon._run_worker_once()
             acts = recon.tick()
             board.save()
             print(time.strftime("%H:%M:%S"), acts)

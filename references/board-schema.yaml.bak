@@ -17,28 +17,6 @@ run:
     - merged
     - escalated
     - external
-  human_gate_state:
-    spec:
-      decision: pending
-      owner:
-      ts:
-    pre-merge:
-      decision: pending
-      owner:
-      ts:
-    release:
-      decision: pending
-      owner:
-      ts:
-  pausing: false
-  pause_reason:
-stats:
-  dispatched: 0
-  promoted: 0
-  merged: 0
-  escalated: 0
-  held: 0
-events: []
 tickets:
   - id: MMA-XXXX
     title:
