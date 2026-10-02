@@ -1,37 +1,6 @@
 # Dependency DAG
 
-Tasks: 32
-Critical path (7): T-05 -> T-07 -> T-09 -> T-11b -> T-14 -> T-20 -> T-24
+Tasks: 1
+Critical path (1): T-01
 
 - `T-01` -> deps: (none)
-- `T-02a` -> deps: (none)
-- `T-02b` -> deps: T-02a, T-11a
-- `T-03` -> deps: (none)
-- `T-04` -> deps: (none)
-- `T-05` -> deps: (none)
-- `T-07` -> deps: T-05
-- `T-08` -> deps: (none)
-- `T-09` -> deps: T-04, T-05, T-07
-- `T-10` -> deps: (none)
-- `T-11a` -> deps: (none)
-- `T-06` -> deps: T-11a
-- `T-11b` -> deps: T-09, T-11a
-- `T-11c` -> deps: T-01, T-11a
-- `T-12` -> deps: T-04, T-09
-- `T-13a` -> deps: T-08, T-11a
-- `T-13b` -> deps: T-11a, T-12
-- `T-14` -> deps: T-02b, T-10, T-11b, T-13a
-- `T-15` -> deps: T-08, T-11a, T-17
-- `T-16` -> deps: (none)
-- `T-17` -> deps: T-03, T-06, T-08, T-11a, T-16
-- `T-18` -> deps: T-03, T-06, T-12
-- `T-20` -> deps: T-11b, T-13a, T-14
-- `T-21` -> deps: T-11a, T-14, T-15
-- `T-22` -> deps: T-06
-- `T-23` -> deps: T-06
-- `T-24` -> deps: T-11c, T-14, T-15, T-17, T-20
-- `T-25` -> deps: T-07, T-10
-- `T-26a` -> deps: T-04
-- `T-26b` -> deps: T-12
-- `T-27` -> deps: T-13a, T-14, T-15, T-20
-- `T-28` -> deps: T-16, T-17, T-22
