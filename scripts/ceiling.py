@@ -70,12 +70,22 @@ def check(board_path: str, stalled_s: int = 0) -> dict:
                     "reviewing", "awaiting-approval"):
                 stalls.append({"ticket": t["id"], "col": t.get("col"), "age_s": int(age)})
 
+    wip = sum(1 for t in board.get("tickets", [])
+              if t.get("col") in ("building", "reviewing", "awaiting-approval"))
+    counts = {}
+    for t in board.get("tickets", []):
+        c = t.get("col", "blocked")
+        counts[c] = counts.get(c, 0) + 1
+    bottleneck = max(counts.items(), key=lambda kv: kv[1]) if counts else ("", 0)
+
     return {
         "paused": paused,
         "cost": cost,
         "cost_ceiling": ceilings.get("usd"),
         "wall": wall,
         "wall_ceiling": ceilings.get("wall_s"),
+        "wip": wip,
+        "bottleneck": {"column": bottleneck[0], "count": bottleneck[1]},
         "stalls": stalls,
         "reasons": reasons,
     }

@@ -161,10 +161,11 @@ class Reconciler:
         for a, b in merge_filesets(ready_now):
             ta, tb = self.board.get(a), self.board.get(b)
             holder = ta if self._depth(a) >= self._depth(b) else tb
+            partner = tb if holder is ta else ta
             if holder:
                 holder["col"] = "blocked"
-                holder["_held_by"] = holder["id"]
-                actions.append(f"hold {holder['id']} (collision with other)")
+                holder["_held_by"] = partner["id"]
+                actions.append(f"hold {holder['id']} (collision with {partner['id']})")
                 self.board.add_event("hold", holder["id"], "fileset collision")
 
         # 4) Escalate: stuck > threshold.

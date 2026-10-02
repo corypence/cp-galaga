@@ -34,10 +34,10 @@ tickets:
   size: M
   fileset:
   - '`:core:ui`/'
-  col: ready
+  col: building
   state: ready
-  worktree: ''
-  branch: ''
+  worktree: w-T-01
+  branch: T-01
   pr: null
   rounds:
     code:
@@ -68,10 +68,10 @@ tickets:
   size: S
   fileset:
   - '`:repo:unit`/'
-  col: ready
+  col: building
   state: ready
-  worktree: ''
-  branch: ''
+  worktree: w-T-02a
+  branch: T-02a
   pr: null
   rounds:
     code:
@@ -100,7 +100,7 @@ tickets:
   depends:
   - T-02a
   - T-11a
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -138,7 +138,7 @@ tickets:
   size: L
   fileset:
   - '`:core:ui`/'
-  col: ready
+  col: blocked
   state: ready
   worktree: ''
   branch: ''
@@ -162,6 +162,7 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+  _held_by: T-16
 - id: T-04
   module: '`:database:map`'
   covers:
@@ -171,7 +172,7 @@ tickets:
   size: M
   fileset:
   - '`:database:map`/'
-  col: ready
+  col: blocked
   state: ready
   worktree: ''
   branch: ''
@@ -195,6 +196,7 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+  _held_by: T-05
 - id: T-05
   module: '`:database:map`'
   covers:
@@ -270,7 +272,7 @@ tickets:
   - R8.2
   - R8.4
   depends: []
-  qa: "Task \xB7"
+  qa: Task
   size: M
   fileset:
   - '`:database:member`/'
@@ -308,7 +310,7 @@ tickets:
   - T-04
   - T-05
   - T-07
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:repo:maps`/'
@@ -345,7 +347,7 @@ tickets:
   size: M
   fileset:
   - '`:feature:stakemap`/'
-  col: ready
+  col: blocked
   state: ready
   worktree: ''
   branch: ''
@@ -369,13 +371,14 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+  _held_by: T-11a
 - id: T-11a
   module: '`:feature:stakemap`'
   covers:
   - R1.1
   - R1.4
   depends: []
-  qa: "Task \xB7"
+  qa: Task
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -409,7 +412,7 @@ tickets:
   - R12.2
   depends:
   - T-11a
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -444,7 +447,7 @@ tickets:
   depends:
   - T-09
   - T-11a
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -481,7 +484,7 @@ tickets:
   depends:
   - T-01
   - T-11a
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -516,7 +519,7 @@ tickets:
   depends:
   - T-04
   - T-09
-  qa: "Task \xB7"
+  qa: Task
   size: M
   fileset:
   - '`:repo:maps`/'
@@ -551,7 +554,7 @@ tickets:
   depends:
   - T-08
   - T-11a
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -586,7 +589,7 @@ tickets:
   depends:
   - T-11a
   - T-12
-  qa: "Story \xB7"
+  qa: Story
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -623,7 +626,7 @@ tickets:
   - T-10
   - T-11b
   - T-13a
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -659,7 +662,7 @@ tickets:
   - T-08
   - T-11a
   - T-17
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -768,7 +771,7 @@ tickets:
   - T-03
   - T-06
   - T-12
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -804,7 +807,7 @@ tickets:
   - T-11b
   - T-13a
   - T-14
-  qa: "Story \xB7"
+  qa: Story
   size: M
   fileset:
   - '`:feature:stakemap`/'
@@ -840,7 +843,7 @@ tickets:
   - T-11a
   - T-14
   - T-15
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -909,7 +912,7 @@ tickets:
   depends:
   - T-06
   - P2**
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:feature:stakemap`/'
@@ -947,7 +950,7 @@ tickets:
   - T-15
   - T-17
   - T-20
-  qa: "Task \xB7"
+  qa: Task
   size: S
   fileset:
   - '`:core:strings`/'
@@ -1054,7 +1057,7 @@ tickets:
   - R6.4
   depends:
   - T-12
-  qa: "Task \xB7"
+  qa: Task
   size: ''
   fileset:
   - '`:database:map`, `:repo:maps`/'
@@ -1159,3 +1162,26 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+events:
+- ts: '2026-10-02T04:50:20.446469+00:00'
+  kind: dispatch
+  ticket: T-01
+  detail: slot free, deps merged
+- ts: '2026-10-02T04:50:20.446469+00:00'
+  kind: dispatch
+  ticket: T-02a
+  detail: slot free, deps merged
+- ts: '2026-10-02T04:50:20.446469+00:00'
+  kind: hold
+  ticket: T-03
+  detail: fileset collision
+- ts: '2026-10-02T04:50:20.446469+00:00'
+  kind: hold
+  ticket: T-04
+  detail: fileset collision
+- ts: '2026-10-02T04:50:20.446469+00:00'
+  kind: hold
+  ticket: T-10
+  detail: fileset collision
+stats:
+  dispatched: 2

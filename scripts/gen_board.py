@@ -37,7 +37,7 @@ def parse_task(line_iter):
         # The field appears as **Name** `value`. Capture everything up to the next ` · ` field
         # separator or end of line (the value itself may hold backtick lists).
         for l in block:
-            m = re.search(rf"\*\*\s*{name}\s*\*\*\s*(.+?)(?= · \*\*|$)", l)
+            m = re.search(rf"\*\*\s*{name}\s*\*\*\s*(.+?)(?= · \*\*| ·|$)", l)
             if m:
                 return m.group(1).strip()
         return ""
