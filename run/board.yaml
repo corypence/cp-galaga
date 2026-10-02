@@ -1,41 +1,18 @@
 tickets:
-- id: T-01
+- id: MMA-4494
   module: core:ui
-  col: merged
-  rounds:
-    code:
-      budget: 3
-      done: 0
-    test:
-      budget: 3
-      done: 0
-    response:
-      budget: 5
-      done: 0
+  col: ready
   metrics:
     cycle_s: 0
-    gate_pass: 0
-    gate_total: 0
+    gate_pass: 1
+    gate_total: 1
   cost:
     tokens: 0
     usd: 0.0
     wall_s: 0
-  escalations: []
-  col_ts: '2026-10-02T16:16:44.292151+00:00'
-  pr: '#0'
-- id: T-02
+- id: MMA-6048
   module: core:qa
-  col: merged
-  rounds:
-    code:
-      budget: 3
-      done: 0
-    test:
-      budget: 3
-      done: 0
-    response:
-      budget: 5
-      done: 0
+  col: ready
   metrics:
     cycle_s: 0
     gate_pass: 0
@@ -44,40 +21,9 @@ tickets:
     tokens: 0
     usd: 0.0
     wall_s: 0
-  escalations: []
-  col_ts: '2026-10-02T16:16:44.292678+00:00'
-  pr: '#1'
 run:
-  id: run-0
-  base: main
-  slots: 2
   columns:
+  - ready
   - building
-  - awaiting-merge
   - merged
-  stats:
-    dispatched: 0
-    promoted: 0
-    merged: 0
-    escalated: 0
-    held: 0
-events:
-- ts: '2026-10-02T16:16:44.169048+00:00'
-  kind: promote
-  ticket: T-01
-  detail: job log green, expected the "[HOST/]OWNER/REPO" format, got "https///github
-- ts: '2026-10-02T16:16:44.291513+00:00'
-  kind: promote
-  ticket: T-02
-  detail: job log green, expected the "[HOST/]OWNER/REPO" format, got "https///github
-- ts: '2026-10-02T16:16:44.292151+00:00'
-  kind: complete
-  ticket: T-01
-  detail: pre-merge go
-- ts: '2026-10-02T16:16:44.292678+00:00'
-  kind: complete
-  ticket: T-02
-  detail: pre-merge go
-stats:
-  promoted: 2
-  merged: 2
+  stats: {}
