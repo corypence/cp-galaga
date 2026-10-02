@@ -34,10 +34,80 @@ tickets:
   size: M
   fileset:
   - '`:core:ui`/'
-  col: building
+  col: ready
   state: ready
-  worktree: w-T-01
-  branch: T-01
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-02a
+  module: '`:repo:unit`'
+  covers:
+  - R2.2b
+  - '#25'
+  depends: []
+  qa: Task
+  size: S
+  fileset:
+  - '`:repo:unit`/'
+  col: ready
+  state: ready
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-02b
+  module: '`:feature:stakemap`'
+  covers:
+  - R2.2
+  - R2.2a
+  depends:
+  - T-02a
+  - T-11a
+  qa: "Task \xB7"
+  size: S
+  fileset:
+  - '`:feature:stakemap`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
   pr: null
   rounds:
     code:
@@ -68,10 +138,10 @@ tickets:
   size: L
   fileset:
   - '`:core:ui`/'
-  col: building
+  col: ready
   state: ready
-  worktree: w-T-03
-  branch: T-03
+  worktree: ''
+  branch: ''
   pr: null
   rounds:
     code:
@@ -101,7 +171,7 @@ tickets:
   size: M
   fileset:
   - '`:database:map`/'
-  col: blocked
+  col: ready
   state: ready
   worktree: ''
   branch: ''
@@ -125,7 +195,6 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-  _held_by: T-04
 - id: T-05
   module: '`:database:map`'
   covers:
@@ -300,11 +369,117 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+- id: T-11a
+  module: '`:feature:stakemap`'
+  covers:
+  - R1.1
+  - R1.4
+  depends: []
+  qa: "Task \xB7"
+  size: M
+  fileset:
+  - '`:feature:stakemap`/'
+  col: ready
+  state: ready
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
 - id: T-06
   module: '`:feature:stakemap`'
   covers:
   - R12.2
   depends:
+  - T-11a
+  qa: "Task \xB7"
+  size: S
+  fileset:
+  - '`:feature:stakemap`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-11b
+  module: '`:feature:stakemap`'
+  covers:
+  - R3
+  depends:
+  - T-09
+  - T-11a
+  qa: "Story \xB7"
+  size: M
+  fileset:
+  - '`:feature:stakemap`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-11c
+  module: '`:feature:stakemap`'
+  covers:
+  - R1.2
+  - R1.3
+  - '#18'
+  depends:
+  - T-01
   - T-11a
   qa: "Task \xB7"
   size: S
@@ -345,7 +520,77 @@ tickets:
   size: M
   fileset:
   - '`:repo:maps`/'
-  col: ready
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-13a
+  module: '`:feature:stakemap`'
+  covers:
+  - R5
+  depends:
+  - T-08
+  - T-11a
+  qa: "Story \xB7"
+  size: M
+  fileset:
+  - '`:feature:stakemap`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-13b
+  module: '`:feature:stakemap`'
+  covers:
+  - R6
+  depends:
+  - T-11a
+  - T-12
+  qa: "Story \xB7"
+  size: S
+  fileset:
+  - '`:feature:stakemap`/'
+  col: blocked
   state: blocked
   worktree: ''
   branch: ''
@@ -766,6 +1011,77 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
+- id: T-26a
+  module: '`:database:map`, `:database:member`'
+  covers:
+  - N3
+  - N6
+  - R7
+  - R8.2
+  depends:
+  - T-04
+  qa: Task
+  size: ''
+  fileset:
+  - '`:database:map`, `:database:member`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
+- id: T-26b
+  module: '`:database:map`, `:repo:maps`'
+  covers:
+  - R6.4
+  depends:
+  - T-12
+  qa: "Task \xB7"
+  size: ''
+  fileset:
+  - '`:database:map`, `:repo:maps`/'
+  col: blocked
+  state: blocked
+  worktree: ''
+  branch: ''
+  pr: null
+  rounds:
+    code:
+      done: 0
+      budget: 3
+    test:
+      done: 0
+      budget: 3
+    response:
+      done: 0
+      budget: 5
+  cost:
+    tokens: 0
+    usd: 0.0
+    wall_s: 0
+  metrics:
+    cycle_s: 0
+    gate_pass: 0
+    gate_total: 0
+  escalations: []
 - id: T-27
   module: '`:feature:stakemap`'
   covers:
@@ -843,22 +1159,3 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-events:
-- ts: '2026-10-02T03:48:01.915689+00:00'
-  kind: fold
-  ticket: T-12
-  detail: deps merged
-- ts: '2026-10-02T03:48:01.916689+00:00'
-  kind: dispatch
-  ticket: T-01
-  detail: slot free, deps merged
-- ts: '2026-10-02T03:48:01.916689+00:00'
-  kind: dispatch
-  ticket: T-03
-  detail: slot free, deps merged
-- ts: '2026-10-02T03:48:01.916689+00:00'
-  kind: hold
-  ticket: T-04
-  detail: fileset collision
-stats:
-  dispatched: 2

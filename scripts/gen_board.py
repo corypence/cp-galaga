@@ -16,7 +16,7 @@ import argparse
 import re
 from pathlib import Path
 
-TASK_ID = r"[A-Za-z]+-\d+(?:-[A-Za-z])?"
+TASK_ID = r"[A-Za-z]+-\d+[a-z]*"
 HEADER_RE = re.compile(r"^\s*#+\s*" + TASK_ID + r"\b")
 
 

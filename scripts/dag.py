@@ -22,7 +22,7 @@ from collections import defaultdict, deque
 from pathlib import Path
 
 # A task identifier: T-01 / MMA-6050-a / MMA-6048 / etc.
-TASK_ID = r"[A-Za-z]+-\d+(?:-[A-Za-z])?"
+TASK_ID = r"[A-Za-z]+-\d+[a-z]*"
 
 # Header line: starts with markdown heading markers then a task id.
 HEADER_RE = re.compile(r"^\s*#+\s*" + TASK_ID + r"\b")
