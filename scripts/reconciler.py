@@ -141,6 +141,41 @@ class Reconciler:
         res = gates.run_ticket(tid, ladder, module or "core:ui", dry=dry)
         return bool(res.get("green"))
 
+    def _gh_pr_create(self, tid: str, module: str) -> tuple[bool, str]:
+        """Create a PR via `gh` for a promoted ticket. Returns (ok, detail).
+        Uses the repo from git remote (or --repo flag), branch = tid, base = main.
+        """
+        import subprocess
+        remote = self.board.data.get("run", {}).get("repo")
+        if not remote:
+            try:
+                out = subprocess.run(
+                    ["git", "remote", "get-url", "origin"],
+                    capture_output=True, text=True, check=True)
+                url = out.stdout.strip()
+                # strip ssh/https prefix and trailing .git
+                remote = url.split("@")[-1].replace(".git", "")
+                remote = remote.replace(":", "/")
+                if not remote:
+                    remote = None
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                remote = None
+        repo = remote or self.ctx.get("repo")
+        branch = tid
+        cmd = ["gh", "pr", "create",
+               "--repo", str(repo),
+               "--title", f"[{module or 'core:ui'}] {tid}",
+               "--body", f"Auto PR for ticket {tid}.",
+               "--head", branch,
+               "--base", self.board.data.get("run", {}).get("base", "main")]
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            if res.returncode == 0:
+                return True, res.stdout.strip() or res.stderr.strip()
+            return False, (res.stderr.strip() or res.stdout.strip())
+        except FileNotFoundError:
+            return False, "gh not found"
+
     def _premerge_go(self, tid: str) -> tuple[bool, dict]:
         """Pre-merge human gate. Autonomous approve (approval flag off) records a Go;
         if a human decision already exists, honour it."""
@@ -211,12 +246,16 @@ class Reconciler:
             if t.get("col") == "building":
                 if self._gate_passed(t["id"], t.get("module", "")):
                     self._set_col(t, "awaiting-merge")
-                    t["pr"] = f"#{self._pr}"
+                    self.board.stat("promoted")
+                    pr_ok, pr_detail = self._gh_pr_create(t["id"], t.get("module", ""))
+                    t["pr"] = pr_detail if pr_ok else f"#{self._pr}"
                     self._pr += 1
                     t.setdefault("escalations", [])
-                    actions.append(f"promote {t['id']} -> awaiting-merge (gates green)")
-                    self.board.add_event("promote", t["id"], "gates green")
-                    self.board.stat("promoted")
+                    actions.append(
+                        f"promote {t['id']} -> awaiting-merge (gates green"
+                        + (", pr ok" if pr_ok else ", gh pr failed)")
+                        + ")")
+                    self.board.add_event("promote", t["id"], "gates green" + (", pr ok" if pr_ok else f", {pr_detail[:60]}"))
 
         # 6) Complete: awaiting-merge -> merged on pre-merge Go.
         for t in self.board.data["tickets"]:
