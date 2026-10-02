@@ -1,0 +1,27 @@
+# Ticket template (run/tickets/MMA-XXXX/ticket.yaml)
+# Copy into run/tickets/MMA-XXXX/ and fill in.
+id: MMA-XXXX
+title:
+state: ready              # ready|building|reviewing|awaiting-approval|change-response|merged|escalated|cancelled
+phase: task               # task|story|epic|external
+type: task
+module:
+covers: []                # requirement ids (R1, R11.1..R11.4)
+deps: []                  # topological; reconciler won't dispatch until all merged
+fileset: []               # predicted files -> collision gate
+branch: MMA-XXXX
+worktree: w-XXXX
+pr:                       # #1234 or null
+rounds:
+  code: {done: 0, budget: 3}
+  test: {done: 0, budget: 3}
+  response: {done: 0, budget: 5}
+cost:
+  tokens: 0
+  usd: 0.0
+  wall_s: 0
+metrics:
+  cycle_s: 0
+  gate_pass: 0
+  gate_total: 0
+escalations: []

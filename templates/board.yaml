@@ -1,0 +1,69 @@
+# Board template (run/board.yaml)
+# Machine-readable single source of truth (design doc §5.3, §9.3).
+# Keep the kanban CLI / Obsidian board as a rendered view.
+run:
+  id: LTS-XXXX            # run key
+  base: main              # base branch
+  slots: 2                # max parallel WIP
+  ceilings:
+    usd: 500.0            # cost ceiling
+    wall_s: 864000        # wall-time ceiling (10 days)
+  columns:
+    - blocked
+    - ready
+    - building
+    - reviewing
+    - awaiting-approval
+    - awaiting-merge
+    - merged
+    - escalated
+    - external
+  human_gate_state:
+    spec:
+      decision: pending
+      owner:
+      ts:
+    pre-merge:
+      decision: pending
+      owner:
+      ts:
+    release:
+      decision: pending
+      owner:
+      ts:
+  pausing: false
+  pause_reason:
+stats:
+  dispatched: 0
+  promoted: 0
+  merged: 0
+  escalated: 0
+  held: 0
+events: []
+tickets:
+  - id: MMA-XXXX
+    title:
+    col: ready
+    state: ready
+    phase: task
+    type: task
+    module:
+    covers: []
+    deps: []
+    fileset: []
+    branch: MMA-XXXX
+    worktree: w-XXXX
+    pr:
+    rounds:
+      code: {done: 0, budget: 3}
+      test: {done: 0, budget: 3}
+      response: {done: 0, budget: 5}
+    cost:
+      tokens: 0
+      usd: 0.0
+      wall_s: 0
+    metrics:
+      cycle_s: 0
+      gate_pass: 0
+      gate_total: 0
+    escalations: []

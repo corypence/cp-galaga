@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime state (regenerated)
+run/events.ndjson
+run/quarantine.json
+run/ceiling.state
+run/humangate.ndjson
+run/notifications.log
+run/incidents.ndjson
+run/spec-*
+run/determinism.lock
+
+# Scratch / probes
+probe.py
+*.tmp
