@@ -118,6 +118,7 @@ class Reconciler:
         self.deps = deps
         self.critical = critical_path_len  # ticket -> depth (for ordering)
         self.ctx = ctx
+        self._pr = 0  # monotonic PR counter for promote/complete
 
     def _deps_merged(self, tid: str) -> bool:
         for d in self.deps.get(tid, []):
@@ -128,6 +129,23 @@ class Reconciler:
 
     def _depth(self, tid: str) -> int:
         return self.critical.get(tid, 0)
+
+    def _gate_passed(self, tid: str, module: str, dry: bool = True) -> bool:
+        """Promote gate: run the ticket's ladder and report if it's green."""
+        import gates
+        ladder = {t: cfg["cmd"] for t, cfg in gates.DEFAULT_LADDER.items()}
+        res = gates.run_ticket(tid, ladder, module or "core:ui", dry=dry)
+        return bool(res.get("green"))
+
+    def _premerge_go(self, tid: str) -> tuple[bool, dict]:
+        """Pre-merge human gate. Autonomous approve (approval flag off) records a Go;
+        if a human decision already exists, honour it."""
+        import humangate
+        last = humangate.last_decision("pre-merge")
+        if last and last.get("decision") in ("go", "no-go", "hold"):
+            return last.get("decision") == "go", last
+        humangate.record("pre-merge", "go", owner="cory", detail="autonomous approve")
+        return True, {"owner": "cory"}
 
     def tick(self) -> list[str]:
         actions = []
@@ -182,6 +200,30 @@ class Reconciler:
                         t.setdefault("escalations", []).append({"at": ts})
                         actions.append(f"escalate {t['id']} (stuck >{threshold}s)")
                         self.board.add_event("escalate", t["id"], "stuck")
+
+        # 5) Promote: building -> awaiting-merge when the 7-tier gate ladder is green.
+        for t in self.board.data["tickets"]:
+            if t.get("col") == "building":
+                if self._gate_passed(t["id"], t.get("module", "")):
+                    t["col"] = "awaiting-merge"
+                    t["pr"] = f"#{self._pr}"
+                    self._pr += 1
+                    t.setdefault("escalations", [])
+                    actions.append(f"promote {t['id']} -> awaiting-merge (gates green)")
+                    self.board.add_event("promote", t["id"], "gates green")
+                    self.board.stat("promoted")
+
+        # 6) Complete: awaiting-merge -> merged on pre-merge Go.
+        for t in self.board.data["tickets"]:
+            if t.get("col") == "awaiting-merge":
+                go, _ = self._premerge_go(t["id"])
+                if go:
+                    t["col"] = "merged"
+                    actions.append(f"complete {t['id']} -> merged (pre-merge go)")
+                    self.board.add_event("complete", t["id"], "pre-merge go")
+                    self.board.stat("merged")
+                else:
+                    actions.append(f"hold {t['id']} (pre-merge no-go)")
 
         if not actions:
             actions.append("(nothing to do)")

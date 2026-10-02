@@ -34,10 +34,10 @@ tickets:
   size: M
   fileset:
   - '`:core:ui`/'
-  col: building
+  col: ready
   state: ready
-  worktree: w-T-01
-  branch: T-01
+  worktree: ''
+  branch: ''
   pr: null
   rounds:
     code:
@@ -68,10 +68,10 @@ tickets:
   size: S
   fileset:
   - '`:repo:unit`/'
-  col: building
+  col: ready
   state: ready
-  worktree: w-T-02a
-  branch: T-02a
+  worktree: ''
+  branch: ''
   pr: null
   rounds:
     code:
@@ -138,7 +138,7 @@ tickets:
   size: L
   fileset:
   - '`:core:ui`/'
-  col: blocked
+  col: ready
   state: ready
   worktree: ''
   branch: ''
@@ -162,7 +162,6 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-  _held_by: T-16
 - id: T-04
   module: '`:database:map`'
   covers:
@@ -172,7 +171,7 @@ tickets:
   size: M
   fileset:
   - '`:database:map`/'
-  col: blocked
+  col: ready
   state: ready
   worktree: ''
   branch: ''
@@ -196,7 +195,6 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-  _held_by: T-05
 - id: T-05
   module: '`:database:map`'
   covers:
@@ -347,7 +345,7 @@ tickets:
   size: M
   fileset:
   - '`:feature:stakemap`/'
-  col: blocked
+  col: ready
   state: ready
   worktree: ''
   branch: ''
@@ -371,7 +369,6 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-  _held_by: T-11a
 - id: T-11a
   module: '`:feature:stakemap`'
   covers:
@@ -1162,26 +1159,3 @@ tickets:
     gate_pass: 0
     gate_total: 0
   escalations: []
-events:
-- ts: '2026-10-02T04:50:20.446469+00:00'
-  kind: dispatch
-  ticket: T-01
-  detail: slot free, deps merged
-- ts: '2026-10-02T04:50:20.446469+00:00'
-  kind: dispatch
-  ticket: T-02a
-  detail: slot free, deps merged
-- ts: '2026-10-02T04:50:20.446469+00:00'
-  kind: hold
-  ticket: T-03
-  detail: fileset collision
-- ts: '2026-10-02T04:50:20.446469+00:00'
-  kind: hold
-  ticket: T-04
-  detail: fileset collision
-- ts: '2026-10-02T04:50:20.446469+00:00'
-  kind: hold
-  ticket: T-10
-  detail: fileset collision
-stats:
-  dispatched: 2
