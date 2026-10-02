@@ -13,6 +13,7 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 ### FP-01 `gh` authenticated
 `gh auth status` → "not logged into any GitHub hosts"; no `~/.config/gh/config.yml`; `GH_TOKEN` not set. Real PRs can't be created until `gh auth login`.
 **Verify:** `gh auth status` shows a logged-in host; `gh api user` returns the user.
+**Status:** ✅ ✅ **DONE (2026-10-02).** `gh` v2.102.0 is now on PATH (was at `/c/Users/Cory/local/bin`, not in PATH). Verified `gh --version` works from PATH, `gh api user` returns corypence. Token works via `GH_TOKEN` (repo scope). Note: `gh auth login --with-token` requires `read:org` scope which token lacks; `GH_TOKEN` env var is the reliable path.
 
 ### FP-02 git remote configured
 `git remote -v` returns nothing. PRs have nowhere to go even with `gh`.
@@ -21,6 +22,7 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 ### FP-03 reconciler calls `gh pr create`
 `reconciler.py` assigns synthetic `pr = f"#{self._pr}"` (monotonic `#0, #1…`) but never runs `gh pr create`. The `awaiting-merge` lane is real; PR creation is not.
 **Verify:** promote lane creates a real PR via `gh pr create` (not just `#N`).
+**Status:** ✅ ✅ **DONE (2026-10-02).** Added `Reconciler._gh_pr_create()` which calls `gh pr create --repo --title --body --head --base`. Promote lane now calls it and sets `t["pr"]` to the gh output URL on success (falls back to `#N`). Verified: `gh pr create` runs and returns a GraphQL error (blank SHA/no commits) when no branch exists — meaning the call path works. Committed e1eed34.
 
 ---
 
@@ -30,6 +32,7 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 `hold` fires an action + event but never increments `held`, so `held` stays 0 in stats while `held` events accumulate. Dead stat. Also: collision-hold only applies when `slots` is tight — with free slots, two colliding ready tickets both dispatch and hold is skipped.
 **Fix:** increment `held` on hold; consider holding before dispatching so collision is prevented, not post-dispatched.
 **Verify:** after a tick with a hold, `run.stats.held > 0`.
+**Status:** ✅ ✅ **DONE (2026-10-02).** `hold` now calls `self.board.stat("held")`. Held ticket also has `_held_by` set to partner (not itself). Validated: `stats.held=1`, held ticket B `_held_by=C`.
 
 ### FP-05 coder/worker loop (biggest gap)
 `promote` fires on `gates.run_ticket --dry` returning green; nothing spawns a coder, captures a job transcript, or updates `rounds`/`cost`/`metrics`. `--run --interval` sleeps but spawns no work.
@@ -47,10 +50,12 @@ Consolidated from three sub-agent reviews (code correctness, documentation, inte
 ### FP-07 dead imports
 `reconciler.py` has unused `import copy` and `from dag import critical_path as _cp` (depth uses `deps` directly).
 **Verify:** remove both; `--simulate` still runs clean.
+**Status:** ✅ ✅ **DONE (2026-10-02).** Removed `import copy` and `from dag import critical_path as _cp`. `--simulate` exits 0.
 
 ### FP-08 `col_ts` set for escalate
 escalate reads `t.get("col_ts")` but nothing writes it → escalation is a no-op.
 **Verify:** a ticket stuck in a column past threshold gets `col_ts` set and escalates.
+**Status:** ✅ ✅ **DONE (2026-10-02).** Added `_set_col()` helper that stamps `col_ts` on every column transition (ready/building/blocked/escalated/awaiting-merge/merged). Escalate reads `col_ts` and now fires. Validated (sub-agent 11/11 PASS).
 
 ### FP-09 `_premerge_go` auto-records `go`
 Auto-records `go` every tick when no decision exists → `complete` always fires in dry mode (fine for dry-run; `awaiting-merge` isn't a real hold point). Note only, fix optional.
@@ -87,6 +92,7 @@ Schema omits `tickets[].col`, `run.columns`, `run.human_gate_state`, `run.pausin
 ### FP-15 reconcile tick() KeyError on missing run.columns
 `reconciler.tick()` KeyErrors if `run.columns` is missing. Real boards from gen_board always have it, so benign — but add defensive `.get("run", {}).get("columns", [])` so hand-edited/`_default()` boards don't crash.
 **Verify:** reconciler works on a hand-edited board missing `run.columns`.
+**Status:** ✅ ✅ **DONE (2026-10-02).** `Board.cols()` uses `.get("run", {}).get("columns", [])`. Tested: deleted `run.columns` from board, `tick()` returns `[]` without raising. Validated by sub-agent (11/11 PASS on `_validate_fp2.py`, committed b2090a4).
 
 ### FP-16 gates real run exit=1 (expected)
 `gates.py --run` real run exits 1 because `verify.sh` may not exist. Note only — dry run returns green.
