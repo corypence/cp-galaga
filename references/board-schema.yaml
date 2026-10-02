@@ -1,0 +1,46 @@
+# Machine-readable board schema (Phase 1).
+# This is the single source of truth for run state; the kanban CLI is the durable queue.
+run:
+  id: LTS-XXXX            # run key
+  base: main              # base branch
+  slots: 2                # max parallel WIP
+  ceilings:
+    usd: 500.0            # cost ceiling
+    wall_s: 864000        # wall-time ceiling (10 days)
+  columns:
+    - blocked
+    - ready
+    - building
+    - reviewing
+    - awaiting-approval
+    - awaiting-merge
+    - merged
+    - escalated
+    - external
+tickets:
+  - id: MMA-XXXX
+    title:
+    col: ready
+    state: ready          # ready|building|reviewing|awaiting-approval|change-response|merged|escalated|cancelled
+    phase: task           # task|story|epic|external
+    type: task
+    module:
+    covers: []            # requirement ids
+    deps: []              # topological
+    fileset: []           # predicted files → collision gate
+    branch: MMA-XXXX
+    worktree: w-XXXX
+    pr:                   # #1234 or null
+    rounds:
+      code: {done: 0, budget: 3}
+      test: {done: 0, budget: 3}
+      response: {done: 0, budget: 5}
+    cost:
+      tokens: 0
+      usd: 0.0
+      wall_s: 0
+    metrics:
+      cycle_s: 0
+      gate_pass: 0
+      gate_total: 0
+    escalations: []
