@@ -96,12 +96,51 @@ Schema omits `tickets[].col`, `run.columns`, `run.human_gate_state`, `run.pausin
 
 ### FP-16 gates real run exit=1 (expected)
 `gates.py --run` real run exits 1 because `verify.sh` may not exist. Note only — dry run returns green.
+**Status:** ✅ **DONE (2026-10-02).** `gates.py --run --dry` returns green; real run exits 1 (verify.sh absent) as expected.
+
+---
+
+## 🟢 Minor — more (from second code-correctness sweep)
+
+### FP-17 reconciler.py dead vars
+`cols = self.board.cols()` is computed but never used (dead var). `critical_path_len` depth is recomputed via local `d()` in main() duplicating dag.critical_path. Minor — no functional bug.
+**Verify:** remove unused `cols` var; confirm `--simulate` still drains.
+
+### FP-18 gates.py budget/flaky unused
+`run_tier` called from `run_ticket` always passes `max_retries=2, flaky=False`, so `DEFAULT_LADDER`'s `budget`/`flaky` fields (e.g. `perf` flaky=True) are never applied. `--ladder` also strips ladder to `cmd` only. Minor.
+**Verify:** confirm DEFAULT_LADDER budget/flaky fields are read somewhere (or note they're unused).
+
+### FP-19 dag.py dead condition
+`critical_path` has dead `if d in edges or d in {k for k in []}:` — `{k for k in []}` is always-empty set. Effectively just `d in edges`. Minor.
+**Verify:** simplify condition; confirm critical path still 7.
+
+### FP-20 metrics.py dead branch + wall_s always 0
+`mode = "w" if args.pretty else "w"` dead branch. Docstring claims logs have timestamps but real ones don't, so wall_s is always 0. Minor.
+**Verify:** confirm dry run works; note wall_s is 0 with real data.
+
+### FP-21 audit.py go.mod parse wrong fields
+`audit_deps` go.mod parse extracts wrong fields: `package = ln.split()[0]` (`require`) and `version = ln.split()[1]` (`example.com/bar`) instead of module/version. Piped versions carry operator (`requests==2.31.0` → `=2.31.0`). Minor.
+**Verify:** run audit, confirm parse quirk.
+
+### FP-22 traceability.py / dashboard.py flake_rate gap
+`dashboard.flake_rate` counts `m.get("flaky")` but `metrics.py` never emits a `flaky` field — flake rate always 0. Schema gap between the two. Minor.
+**Verify:** confirm dashboard.flake_rate is always 0.
+
+### FP-23 phase3.py --dry canary exit 1 + incidents KeyError
+`--promote --canary N --dry` returns exit 1 (`return 1 if args.canary and not args.dry else 0`), so a successful dry promotion reports non-zero. Also `incidents()` assumes every line has a `kind` key (KeyError). Minor.
+**Verify:** run phase3 --promote --canary 2 --dry, confirm exit 1 bug.
+
+### FP-24 retry.py backoff not full jitter
+Docstring says "full jitter" (`random(0.5,1.5)`) but code does `uniform(exp*0.5, exp)` (0.5–1.0 scale). Backoff at attempt 0 non-zero. Minor.
+**Verify:** run retry --demo, confirm backoff behavior.
+
+---
 
 ## ✅ Verified working (no fix needed)
 - All 14 scripts + flags runnable; SKILL.md mentions all 14.
 - Templates valid; board-schema → gen_board → reconciler data flow consistent.
 - `--simulate` drains all tickets to merged in ~16 ticks; standalone `--tick` works.
-- fold+hold quirk confirmed (T-04 folds AND held in same tick) — benign by design, resolved under FP-04.
+- fold+hold quirk confirmed (T-02b/T-04 fold AND held in same tick) — benign oscillation, drain still completes.
 
 ---
 
