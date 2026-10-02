@@ -22,7 +22,6 @@ Board state is mutated in place; --simulate leaves it untouched.
 """
 from __future__ import annotations
 import argparse
-import copy
 import json
 import time
 from pathlib import Path
@@ -68,7 +67,7 @@ class Board:
         return self.data["stats"][key]
 
     def cols(self) -> list[str]:
-        return self.data["run"]["columns"]
+        return self.data.get("run", {}).get("columns", [])
 
     def get(self, tid: str):
         for t in self.data["tickets"]:
@@ -130,6 +129,11 @@ class Reconciler:
     def _depth(self, tid: str) -> int:
         return self.critical.get(tid, 0)
 
+    def _set_col(self, t: dict, col: str):
+        """Set a ticket's column and stamp col_ts so escalate can time it."""
+        t["col"] = col
+        t["col_ts"] = datetime.now(timezone.utc).isoformat()
+
     def _gate_passed(self, tid: str, module: str, dry: bool = True) -> bool:
         """Promote gate: run the ticket's ladder and report if it's green."""
         import gates
@@ -155,7 +159,7 @@ class Reconciler:
         # 1) Fold: blocked -> ready when deps merge.
         for t in self.board.data["tickets"]:
             if t.get("col") == "blocked" and self._deps_merged(t["id"]):
-                t["col"] = "ready"
+                self._set_col(t, "ready")
                 actions.append(f"fold {t['id']} -> ready (deps merged)")
                 self.board.add_event("fold", t["id"], "deps merged")
 
@@ -167,7 +171,7 @@ class Reconciler:
         for t in ready[:max(0, free)]:
             if not self._deps_merged(t["id"]):
                 continue
-            t["col"] = "building"
+            self._set_col(t, "building")
             t["worktree"] = f"w-{t['id']}"
             t["branch"] = t["id"]
             actions.append(f"dispatch {t['id']} -> building")
@@ -181,10 +185,11 @@ class Reconciler:
             holder = ta if self._depth(a) >= self._depth(b) else tb
             partner = tb if holder is ta else ta
             if holder:
-                holder["col"] = "blocked"
+                self._set_col(holder, "blocked")
                 holder["_held_by"] = partner["id"]
                 actions.append(f"hold {holder['id']} (collision with {partner['id']})")
                 self.board.add_event("hold", holder["id"], "fileset collision")
+                self.board.stat("held")
 
         # 4) Escalate: stuck > threshold.
         threshold = self.ctx.get("escalate_after", 0)
@@ -196,7 +201,7 @@ class Reconciler:
                 if ts:
                     dt = datetime.fromisoformat(ts)
                     if (now - dt).total_seconds() > threshold:
-                        t["col"] = "escalated"
+                        self._set_col(t, "escalated")
                         t.setdefault("escalations", []).append({"at": ts})
                         actions.append(f"escalate {t['id']} (stuck >{threshold}s)")
                         self.board.add_event("escalate", t["id"], "stuck")
@@ -205,7 +210,7 @@ class Reconciler:
         for t in self.board.data["tickets"]:
             if t.get("col") == "building":
                 if self._gate_passed(t["id"], t.get("module", "")):
-                    t["col"] = "awaiting-merge"
+                    self._set_col(t, "awaiting-merge")
                     t["pr"] = f"#{self._pr}"
                     self._pr += 1
                     t.setdefault("escalations", [])
@@ -218,7 +223,7 @@ class Reconciler:
             if t.get("col") == "awaiting-merge":
                 go, _ = self._premerge_go(t["id"])
                 if go:
-                    t["col"] = "merged"
+                    self._set_col(t, "merged")
                     actions.append(f"complete {t['id']} -> merged (pre-merge go)")
                     self.board.add_event("complete", t["id"], "pre-merge go")
                     self.board.stat("merged")
@@ -255,7 +260,7 @@ def main() -> int:
     board = Board(Path(args.board))
     deps = parse_deps(Path(args.tasks))
     # Critical-path depth per ticket (longest chain to merge).
-    from dag import critical_path as _cp
+    from dag import critical_path  # noqa: F401 (import kept for compat; depth computed below)
     depth: dict[str, int] = {}
     for t in board.data["tickets"]:
         memo = {}
