@@ -6,6 +6,7 @@ then docks adjacently to the current player ship.
 """
 from __future__ import annotations
 from enum import Enum, auto
+from dataclasses import dataclass
 
 
 class CaptureState(Enum):

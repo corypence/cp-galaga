@@ -78,3 +78,50 @@ class Starfield:
     def step(self, frame: int):
         for layer in self.layers:
             layer.step(frame)
+
+class TwinklingStarfield:
+    """A twinkling star backdrop (ihalseide/Galaga style).
+
+    Each frame, stars shimmer by toggling brightness between a dim and a bright
+    colour, and drift slowly downward so the backdrop reads as living space.
+    ``step(dt)`` advances the shimmer by a wall-clock delta and ``draw`` paints
+    the layers onto a surface at a per-pixel scale.
+    """
+
+    # dim/bright colour pairs (r, g, b) per layer; [0]=dim, [1]=bright
+    _SWITCHES = [
+        ((30, 30, 60), (200, 200, 255)),
+        ((20, 60, 60), (120, 255, 255)),
+        ((60, 60, 30), (255, 255, 200)),
+    ]
+
+    def __init__(self, width: int = RES_W, height: int = RES_H, layers: int = 3):
+        import random
+        self.w = width
+        self.h = height
+        rng = random.Random(42)
+        self.layers = []
+        for i in range(layers):
+            count = 40 - i * 8
+            stars = []
+            for k in range(count):
+                stars.append([rng.randrange(width), rng.randrange(height)])
+            self.layers.append(stars)
+        self._t = 0
+
+    def step(self, dt: float):
+        """Advance the shimmer by the wall-clock delta (min 1 frame tick)."""
+        self._t += max(1.0, dt)
+
+    def draw(self, surface, scale: float):
+        """Paint the twinkling backdrop at the given per-pixel scale."""
+        import pygame
+        t = self._t
+        for li, layer in enumerate(self.layers):
+            dim, bright = self._SWITCHES[li]
+            bright_on = int(t // 120) % 2 == 0
+            col = bright if bright_on else dim
+            for x, y in layer:
+                px = int(x * scale) % surface.get_width()
+                py = int(y * scale) % surface.get_height()
+                surface.set_at((px, py), col)
