@@ -33,10 +33,30 @@ class Enemy:
     row: int = 0
     cooldown: int = 0
     alive: bool = True
+    hp: int = 3
+    escorts: int = 0
 
     def shot_ready(self, elapsed: int) -> bool:
         """True when the enemy's shot cooldown has expired (elapsed >= cooldown)."""
         return elapsed >= self.cooldown
+
+    def hitbox(self) -> tuple[int, int]:
+        """Return the (width, height) of this enemy's collision box.
+
+        Per spec §3-5, bigger archetypes get bigger hitboxes: Bee/Goei at 14px,
+        Boss at 18px.
+        """
+        if self.etype == EnemyType.BOSS:
+            return (18, 18)
+        return (14, 14)
+
+    def hit(self) -> bool:
+        """Apply one point of damage; return True if this hit destroyed the enemy."""
+        self.hp -= 1
+        if self.hp <= 0:
+            self.alive = False
+            return True
+        return False
 
     def bee_shot(self, manager) -> None:
         """Fire a single downward bee-shot projectile via the BeeShotManager."""
